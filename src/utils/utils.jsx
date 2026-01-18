@@ -1,5 +1,5 @@
 // Vendors
-import { group } from "d3-array";
+import * as d3 from "d3";
 
 /**
  * @file utils.jsx
@@ -21,7 +21,7 @@ const cleanRows = ({ rawData }) =>
     .map((d) => ({
       concepto: findDataValue(d, "concepto") || "Desconocido",
       nombre: findDataValue(d, "territorio") || "Desconocido",
-      año: findDataValue(d, "o"),
+      año: findDataValue(d, "año"),
       valor: +findDataValue(d, "valor") || 0,
     }))
     // Filtramos filas vacías o totales que no nos interesan para nuestra visualización.
@@ -62,7 +62,7 @@ const groupDataByConcept = (rawData) => {
   );
 
   // Agrupamos con D3 y convertimos inmediatamente a Array
-  const groupedMap = group(rawData, (d) => d[conceptoKey]);
+  const groupedMap = d3.group(rawData, (d) => d[conceptoKey]);
 
   // Transformamos el Map en un Array de objetos estructurados
   return Array.from(groupedMap, ([nombre, lista]) => ({

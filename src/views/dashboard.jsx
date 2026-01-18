@@ -10,10 +10,9 @@ import { DataHandlers } from "../handlers/handlers";
 import { ChartOrchestrator } from "../components/chartOrchestrator";
 
 export function Dashboard() {
-  const svgRef = useRef(null);
   const [data, setData] = useState([]);
   const [selectedComparison, setSelectedComparison] = useState(
-    "Nacimientos vs Defunciones",
+    "Nacimientos por género",
   );
 
   const { handleGetData } = DataHandlers({ setData });
@@ -45,7 +44,6 @@ export function Dashboard() {
           labelA: "Hombres",
           labelB: "Mujeres",
           chartType: "barChart",
-          svgRef: svgRef,
         };
       case "Nacimientos vs Defunciones":
         return {
@@ -55,7 +53,6 @@ export function Dashboard() {
           labelA: "Nacimientos",
           labelB: "Defunciones",
           chartType: "lineChart",
-          svgRef: svgRef,
         };
       case "Nuevos matrimonios de distinto género residentes":
         return {
@@ -66,7 +63,6 @@ export function Dashboard() {
           groupB: null,
           labelA: "Matrimonios",
           chartType: "barChart",
-          svgRef: svgRef,
         };
       case "Nacimientos vs Defunciones en Hombres":
         return {
@@ -76,7 +72,6 @@ export function Dashboard() {
           labelA: "Nacimientos",
           labelB: "Defunciones",
           chartType: "lineChart",
-          svgRef: svgRef,
         };
       case "Nacimientos vs Defunciones en Mujeres":
         return {
@@ -86,7 +81,6 @@ export function Dashboard() {
           labelA: "Nacimientos",
           labelB: "Defunciones",
           chartType: "lineChart",
-          svgRef: svgRef,
         };
       case "Matrimonios de distinto sexo vs Matrimonios del mismo sexo":
         return {
@@ -100,7 +94,6 @@ export function Dashboard() {
           labelA: "Matrimonios de distinto sexo",
           labelB: "Matrimonios del mismo sexo",
           chartType: "lineChart",
-          svgRef: svgRef,
         };
       default:
         return null;
@@ -203,13 +196,7 @@ export function Dashboard() {
           />
         </div>
       )}
-      <svg
-        ref={svgRef}
-        width="800"
-        height="400"
-        viewBox="0 0 800 400"
-        style={{ display: "block", margin: "0 auto" }}
-      ></svg>
+
       <footer
         style={{
           marginTop: "40px",

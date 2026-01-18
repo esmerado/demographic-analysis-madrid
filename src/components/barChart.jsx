@@ -5,19 +5,11 @@
  */
 
 import { useEffect, useRef } from "preact/hooks";
-import { select } from "d3-selection";
-import { scaleBand, scaleLinear, scaleOrdinal } from "d3-scale";
-import { axisBottom, axisLeft } from "d3-axis";
-import { max } from "d3-array";
+import * as d3 from "d3";
 
-const BarChart = ({
-  dataGroupA,
-  dataGroupB = null,
-  title,
-  labelA,
-  labelB,
-  svgRef,
-}) => {
+const BarChart = ({ dataGroupA, dataGroupB = null, title, labelA, labelB }) => {
+  console.log("BarChart", dataGroupA, dataGroupB, title, labelA, labelB);
+  const svgRef = useRef(null);
   useEffect(() => {
     if (!dataGroupA || dataGroupA.length === 0 || !svgRef.current) return;
 
@@ -50,13 +42,14 @@ const BarChart = ({
     const width = 800 - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
-    const svg = select(svgRef.current);
+    const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
     // Creación del contenedor del tooltip
-    let tooltip = select("#tooltip");
+    let tooltip = d3.select("#tooltip");
     if (tooltip.empty()) {
-      tooltip = select("body")
+      tooltip = d3
+        .select("body")
         .append("div")
         .attr("id", "tooltip")
         .style("position", "absolute")
@@ -78,24 +71,28 @@ const BarChart = ({
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Definición de las escalas de la gráfica.
-    const x0 = scaleBand().domain(years).range([0, width]).padding(0.2);
-    const x1 = scaleBand()
+    const x0 = d3.scaleBand().domain(years).range([0, width]).padding(0.2);
+    const x1 = d3
+      .scaleBand()
       .domain(isComparison ? ["A", "B"] : ["A"])
       .range([0, x0.bandwidth()])
       .padding(0.05);
-    const maxValue = max(combinedData, (d) => max(d.valores, (v) => v.valor));
-    const y = scaleLinear().domain([0, maxValue]).nice().range([height, 0]);
-    const color = scaleOrdinal()
+    const maxValue = d3.max(combinedData, (d) =>
+      d3.max(d.valores, (v) => v.valor),
+    );
+    const y = d3.scaleLinear().domain([0, maxValue]).nice().range([height, 0]);
+    const color = d3
+      .scaleOrdinal()
       .domain(["A", "B"])
       .range(["#4f46e5", "#ef4444"]);
 
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(axisBottom(x0))
+      .call(d3.axisBottom(x0))
       .selectAll("text")
       .attr("transform", "translate(-10,0)rotate(-40)")
       .style("text-anchor", "end");
-    g.append("g").call(axisLeft(y).ticks(8));
+    g.append("g").call(d3.axisLeft(y).ticks(8));
 
     // Renderizado y eventos
     const yearGroup = g
@@ -118,7 +115,7 @@ const BarChart = ({
       // Eventos del Mouse
       .on("mouseover", function (event, d) {
         // Feedback visual
-        select(this).style("opacity", 0.8);
+        d3.select(this).style("opacity", 0.8);
         tooltip.style("visibility", "visible").html(`
             <div style="font-weight: bold; margin-bottom: 4px;">Año: ${d.año}</div>
             <div style="color: white">● ${d.tipo === "A" ? labelA : labelB}: ${d.valor.toLocaleString()}</div>
@@ -130,7 +127,7 @@ const BarChart = ({
           .style("left", event.pageX + 15 + "px");
       })
       .on("mouseleave", function () {
-        select(this).style("opacity", 1);
+        d3.select(this).style("opacity", 1);
         tooltip.style("visibility", "hidden");
       })
       .transition()
@@ -156,6 +153,7 @@ const BarChart = ({
         {title}
       </h3>
 
+      <svg ref={svgRef}></svg>
       {dataGroupB && (
         <div
           style={{

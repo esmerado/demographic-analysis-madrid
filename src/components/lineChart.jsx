@@ -5,12 +5,7 @@
  */
 
 import { useEffect, useRef } from "preact/hooks";
-import { select } from "d3-selection";
-import { scaleLinear } from "d3-scale";
-import { axisBottom, axisLeft } from "d3-axis";
-import { extent, max } from "d3-array";
-import { line, curveMonotoneX } from "d3-shape";
-import { format } from "d3-format";
+import * as d3 from "d3";
 
 const LineChart = ({
   dataGroupA,
@@ -18,8 +13,8 @@ const LineChart = ({
   title,
   labelA,
   labelB,
-  svgRef,
 }) => {
+  const svgRef = useRef(null);
   useEffect(() => {
     if (!dataGroupA || dataGroupA.length === 0 || !svgRef.current) return;
 
@@ -38,13 +33,14 @@ const LineChart = ({
     const width = 800 - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
-    const svg = select(svgRef.current);
+    const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
     // Reutilización del Tooltip
-    let tooltip = select("#tooltip");
+    let tooltip = d3.select("#tooltip");
     if (tooltip.empty()) {
-      tooltip = select("body")
+      tooltip = d3
+        .select("body")
         .append("div")
         .attr("id", "tooltip")
         .style("position", "absolute")
@@ -65,26 +61,26 @@ const LineChart = ({
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Definición de las escalas de la gráfica.
-    const x = scaleLinear()
-      .domain(extent(seriesA, (d) => d.año))
+    const x = d3
+      .scaleLinear()
+      .domain(d3.extent(seriesA, (d) => d.año))
       .range([0, width]);
 
-    const y = scaleLinear()
-      .domain([0, max([...seriesA, ...seriesB], (d) => d.valor)])
-      .nice()
-      .range([height, 0]);
+    const yDomain = d3.max([...seriesA, ...seriesB], (d) => d.valor);
+    const y = d3.scaleLinear().domain([0, yDomain]).nice().range([height, 0]);
 
     g.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(axisBottom(x).tickFormat(format("d"))); // Formato de año sin comas
+      .call(d3.axisBottom(x).tickFormat(d3.format("d"))); // Formato de año sin comas
 
-    g.append("g").call(axisLeft(y));
+    g.append("g").call(d3.axisLeft(y));
 
     // Definimos el generador de líneas.
-    const lineGenerator = line()
+    const lineGenerator = d3
+      .line()
       .x((d) => x(d.año))
       .y((d) => y(d.valor))
-      .curve(curveMonotoneX);
+      .curve(d3.curveMonotoneX);
 
     // Función para dibujar línea con animación
     const drawLine = (data, color, label) => {
@@ -151,7 +147,7 @@ const LineChart = ({
       >
         {title}
       </h3>
-
+      <svg ref={svgRef}></svg>
       <div
         style={{
           display: "flex",
